@@ -1,25 +1,36 @@
-//初始化游戏的精灵，游戏的入口
+//初始化游戏的精灵，游戏的入口(初始化)
 import {ResourceLoader} from "../base/ResourceLoader.js";
 import {Director} from "./Director.js"
+import {BackGround} from "./BackGround.js"
+import {DataStore} from "../base/DataStore.js"
 
 export class main {
   constructor() {
     this.convas= wx.createCanvas();
-    this.context = this.convas.getContext('2d');
+    this.context = this.convas.getContext('2d'); //2d画布
+    this.datastore = DataStore.getInstance(); //创建数据仓库单例
     const loader = ResourceLoader.create();
-    loader.onLoaded(map => this.onResourceFirstLoaded(map))
-    let image = wx.createImage();
-    image.src = "./images/1.jpg";
-    image.onload = () =>{ //最后执行
-      console.log('last')
-      this.context.drawImage(image, 0, 0,
-       20000, 20000,
-        0, 0, 2200, image.height);
-    }
-    Director.getInstance();
+    console.log(loader.map);
+    this.context.fillStyle = 'white';
+    this.context.fillRect(0, 0, 10000, 10000);
+    loader.onLoaded(map => this.onResourceFirstLoaded(map)) //资源加载后执行
+
   }
 
   onResourceFirstLoaded(map) {
-    console.log(map);
+    this.datastore.context = this.context; //数据仓库单例例增加画布属性
+    this.datastore.images = map; //实例增加类属性images 存放图片集合map
+    this.init();
+    // let background = new BackGround(this.context, map.get('chessboard')); //布置棋盘
+    // background.draw();
+  }
+
+  init() {
+    this.datastore.put( //从类属性images获取数据，放进类属性map
+      'chessboard',
+      new BackGround()
+    );
+    console.log(this.datastore.map)
+    Director.getInstance().run(); //导演："Action!"
   }
 }
