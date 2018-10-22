@@ -11,8 +11,12 @@ export class main {
     this.datastore = DataStore.getInstance(); //创建数据仓库单例
     const loader = ResourceLoader.create();
     console.log(loader.map);
+
+    const xy = BackGround.getXY("1,0") //获得棋盘坐标对应的屏幕坐标
+    console.log("xy: "+xy)
+
     this.context.fillStyle = 'white';
-    this.context.fillRect(0, 0, 10000, 10000);
+    this.context.fillRect(xy[0], xy[1], 10000, 10000); //测试坐标位置
     loader.onLoaded(map => this.onResourceFirstLoaded(map)) //资源加载后执行
 
   }
@@ -26,7 +30,8 @@ export class main {
   }
 
   init() {
-    this.datastore.put( //从类属性images获取数据，放进类属性map
+    this.datastore
+    .put( //从类属性images获取数据，放进类属性map
       'chessboard',
       new BackGround()
     );

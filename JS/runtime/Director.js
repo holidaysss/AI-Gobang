@@ -15,7 +15,7 @@ export class Director{
   }
 
   run() {
-    const backgroundSprite = this.datastore.get('chessboard'); //获取BackGround对象
+    const backgroundSprite = this.datastore.get('chessboard'); //获取棋盘 BackGround对象
     console.log(backgroundSprite);
     backgroundSprite.draw(); //调用精灵基类的draw方法
   }
