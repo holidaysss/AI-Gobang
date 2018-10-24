@@ -29,7 +29,7 @@ export class main {
   onResourceFirstLoaded(map) {
     this.datastore.context = this.context; //数据仓库单例例增加画布属性
     this.datastore.images = map; //实例增加类属性images 存放图片集合map
-    this.init();
+    this.init(); //执行init部分
 
     var image = wx.createImage()
     wx.onTouchStart ((e,n=window.n)=> { //交替落子
@@ -50,10 +50,9 @@ export class main {
             break Loop2;
           }
         }
-
         const mapX = BackGround.getXY(String(i) + ',' + String(j))[0] //获取棋盘坐标[i,j]的屏幕x坐标
-        const perCellSize = BackGround.getXY("1,0")[0] - BackGround.getXY("0,0")[0] //获取棋盘每格的宽
-        if (mapX < e.touches[0].clientX && e.touches[0].clientX < mapX+perCellSize/2) { //四舍五入求最近y坐标
+        const perCellSize = BackGround.getXY("1,0")[0] - BackGround.getXY("0,0")[0]
+        if (mapX < e.touches[0].clientX && e.touches[0].clientX < mapX+perCellSize/2) {
           var screenX = mapX;
           break Loop1;
         }
@@ -62,21 +61,22 @@ export class main {
           break Loop1;
         }
       }
-      console.log(screenX,screenY)
-      this.context.drawImage( //下子
+
+      console.log(screenX,screenY) //距离最近的棋盘落子点
+      this.context.drawImage( //落子
         image, 0, 0,
         image.width,image.height,
         screenX-image.width / 2.6, screenY-image.height/2.6,
         // BackGround.getXY("8,8")[0] - image.width/2.6, BackGround.getXY("8,8")[1] - image.height/2.6,
         image.width/1.3, image.height/1.3)
-      image.src = 'images/white.bmp'
-      if (n>0) {
-        image.src = 'images/white.bmp'
+      // image.src = 'images/white.png'
+      if (n>0) { //白先
+        image.src = 'images/white.png'
       }
       else{
-        image.src = 'images/black.bmp'
+        image.src = 'images/black.png'
       }
-      window.n=window.n*-1;
+      window.n=window.n*-1; //换手
 
     })
     
