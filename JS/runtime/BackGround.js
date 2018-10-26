@@ -5,7 +5,7 @@ import {DataStore} from "../base/DataStore.js"
 export class BackGround extends Sprite { //背景类 继承精灵基类
 
   constructor() {
-    console.log("width"+innerWidth)
+    // console.log("width"+innerWidth)
       const image = Sprite.getImage("chessboard");
       super(image,0,0,
             image.width,image.height,

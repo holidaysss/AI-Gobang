@@ -11,14 +11,13 @@ export class Director{
         const XY = [11 + edgeSize + cellSize * i,
         (this.datastore.canvas.height - this.datastore.canvas.width + 20) / 2 + edgeSize + cellSize * j,
           0] //屏幕的x,y轴坐标，标记位(记录状态是否有子)
-        this.xyDict.set(String([i, j]), XY)
+        this.xyDict.set(String([i, j]), XY);
         this.mapKeys.push(String([i, j]));
         this.mapValues.push(XY);
         // console.log([i,j], XY)
       }
     }
-    console.log(this.xyDict)
-    console.log(this.mapValues)
+    // console.log(this.xyDict)
   }
 
   getMapValues() {
@@ -52,7 +51,7 @@ export class Director{
     const backgroundSprite = this.datastore.get('chessboard'); //获取棋盘 BackGround对象
     const avatarSprite = this.datastore.get('avatar');
     const blackf = this.datastore.get('blackF');
-    console.log("backgroundSprite: "+backgroundSprite);
+    // console.log("backgroundSprite: "+backgroundSprite);
     backgroundSprite.draw(); //调用精灵基类的draw方法
     avatarSprite.draw();
   }

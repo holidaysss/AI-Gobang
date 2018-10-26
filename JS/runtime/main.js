@@ -15,6 +15,7 @@ export class main {
     this.image = wx.createImage();
     this.screenX=null;
     this.screenY=null;
+    this.chessXY=null;
     this.context = this.canvas.getContext('2d'); //2d画布
     this.datastore = DataStore.getInstance(); //创建数据仓库单例
     this.datastore.canvas = this.canvas; //储存画布属性
@@ -56,15 +57,11 @@ export class main {
         break Loop1;
       }
     }
+    
     return [this.screenX, this.screenY]
   }
 
   drawChess() {
-    this.context.drawImage( //落子
-      this.image, 0, 0,
-      this.image.width, this.image.height,
-      this.screenX - this.image.width / 2.6, this.screenY - this.image.height / 2.6,
-      this.image.width / 1.3, this.image.height / 1.3)
     if (this.n > 0) { //白先
       this.image.src = 'images/white.png'
     }
@@ -72,6 +69,12 @@ export class main {
       this.image.src = 'images/black.png'
     }
     this.n = this.n * -1; //换手
+    this.context.drawImage( //落子
+      this.image, 0, 0,
+      this.image.width, this.image.height,
+      this.screenX - this.image.width/2.6, this.screenY - this.image.height/2.6,
+      this.image.width/1.3, this.image.height/1.3)
+    
   }
 
   onResourceFirstLoaded(map) { //资源加载后执行
@@ -81,18 +84,35 @@ export class main {
     
 
     wx.onTouchStart ((e,n=this.n)=> { //点击，交替落子
-      console.log("实际点击坐标： "+e.touches[0].clientX, e.touches[0].clientY) //实际点击屏幕坐标
+      // console.log("实际点击坐标： "+e.touches[0].clientX, e.touches[0].clientY) //实际点击屏幕坐标
       var [screenX, screenY] = this.findLatestXY(e) //获取点击的最近棋盘点屏幕坐标  
-      console.log("最近的棋盘落子点: "+screenX,screenY) //距离最近的棋盘落子点
-      for (let i=0;i<225;i++) {
-        // console.log(this.director.getMapValues()[i])
-        if (this.director.getMapValues()[i][2]== 0 && 
-          this.director.getMapValues()[i][0]==screenX && 
-          this.director.getMapValues()[i][1]==screenY){
-          console.log('111111111111111')
+      // console.log("最近的棋盘落子点: "+screenX,screenY) //距离最近的棋盘落子点
+      var mapKeys = this.director.getMapKeys();
+      var map = this.director.getXY()
+      for (let i of mapKeys) { // 转化为棋盘坐标
+        // console.log(String(map.get(i)), String([screenX,screenY,0]))
+        if (String(map.get(i)[0]).substr(0, 3) == String(screenX).substr(0,3) &&
+          String(map.get(i)[1]).substr(0, 3) == String(screenY).substr(0, 3)) {
+          if (map.get(i)[2]==0) {
+            this.chessXY = i;
+            console.log("chessXY: " + this.chessXY)
+            map.set(i, [screenX, screenY, this.n])
+            console.log(map.get(i))
+            this.drawChess()
+            break;
+            }
+          else{
+            console.log("不能重复下子！")
+          }
         }
+        // else if (String(map.get(i)[0]).substr(0, 3) == String(screenX).substr(0, 3) &&
+        //         String(map.get(i)[1]).substr(0, 3) == String(screenY).substr(0, 3) &&
+        //         map.get(i)[2] != 0) {
+        //           console.log("不能重复下子！")
+        //   }
       }
-      this.drawChess()    
+
+      // this.drawChess()  
     })
     this.init(); //执行init部分
   }
