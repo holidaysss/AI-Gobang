@@ -7,8 +7,8 @@ export class Avatar extends Sprite {
     const image = Sprite.getImage('avatar');
     super(image,0,0,
           image.width,image.height,
-          DataStore.getInstance().canvas.width-image.width/10, DataStore.getInstance()      .canvas.height-image.height/10,
-          image.width/10, image.height/10)
+          DataStore.getInstance().canvas.width-image.width/12,      DataStore.getInstance().canvas.height-image.height/12,
+          image.width/12, image.height/12)
     
   }
 }

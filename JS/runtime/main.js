@@ -5,6 +5,7 @@ import {BackGround} from "./BackGround.js"
 import {DataStore} from "../base/DataStore.js"
 import {Avatar} from "./Avatar.js"
 import {BlackF} from "./BlackF.js"
+import {StartButton} from "../player/StartButton.js"
 
 export class main {
 
@@ -16,6 +17,7 @@ export class main {
     this.screenX=null;
     this.screenY=null;
     this.chessXY=null;
+    this.map = this.director.getXY()
     this.context = this.canvas.getContext('2d'); //2d画布
     this.datastore = DataStore.getInstance(); //创建数据仓库单例
     this.datastore.canvas = this.canvas; //储存画布属性
@@ -23,7 +25,7 @@ export class main {
     // console.log("xy: "+xy)
 
     this.context.fillStyle = 'white';
-    this.context.fillRect(0,0, 10000, 10000); //测试坐标位置
+    this.context.fillRect(0,0, 10000, 10000);
     var imgB = wx.createImage();
     this.context.fill();
 
@@ -41,9 +43,12 @@ export class main {
           this.screenY = mapY;
           break Loop2;
         }
-        else if (mapY + perCellSize / 2 < e.touches[0].clientY && e.touches[0].clientY < mapY + perCellSize) {
+        else if (mapY + perCellSize / 2 <= e.touches[0].clientY && e.touches[0].clientY < mapY + perCellSize) {
           this.screenY = mapY + perCellSize;
           break Loop2;
+        }
+        else if(j==14){
+          console.log('请在棋盘内下棋')    
         }
       }
       const mapX = this.director.getXY().get(String(i) + ',' + String(j))[0] //获取棋盘坐标[i,j]的屏幕x坐标
@@ -52,9 +57,12 @@ export class main {
         this.screenX = mapX;
         break Loop1;
       }
-      else if (mapX + perCellSize / 2 < e.touches[0].clientX && e.touches[0].clientX < mapX + perCellSize) {
+      else if (mapX + perCellSize / 2 <= e.touches[0].clientX && e.touches[0].clientX < mapX + perCellSize) {
         this.screenX = mapX + perCellSize;
         break Loop1;
+      }
+      else if (i == 14) {
+        console.log('请在棋盘内下棋')
       }
     }
     
@@ -81,56 +89,71 @@ export class main {
     this.director.formMap();
     this.datastore.context = this.context; //数据仓库单例例增加画布属性
     this.datastore.images = map; //实例增加类属性images 存放图片集合map
-    
 
-    wx.onTouchStart ((e,n=this.n)=> { //点击，交替落子
+    
+    this.datastore
+      .put( //从类属性images获取数据，放进类属性map
+        'chessboard',
+        new BackGround()
+      )
+      .put( //注册头像数据
+        'avatar',
+        new Avatar()
+      )
+      .put('blackF', new BlackF())
+      .put('start', new StartButton())
+    this.director.startBefore() //开始游戏前的画面
+    
+    this.registerEvent();
+    wx.request({
+      url: 'https://www.leslie2018.com',
+      data: {
+        test: JSON.stringify((1))
+      },
+      method: "POST",
+      header: {
+        'chartset': 'utf-8'
+      }
+    })
+  }
+
+  registerEvent() { //开始游戏，初始化
+    this.canvas.addEventListener('touchend', e=> {
+      // e.preventDefault();
+      if (this.director.isGameOver()) {
+        console.log('游戏开始')
+        this.init();
+      }
+    })
+  }
+
+  init() {
+    wx.onTouchStart((e, n = this.n) => { //点击，交替落子
       // console.log("实际点击坐标： "+e.touches[0].clientX, e.touches[0].clientY) //实际点击屏幕坐标
       var [screenX, screenY] = this.findLatestXY(e) //获取点击的最近棋盘点屏幕坐标  
       // console.log("最近的棋盘落子点: "+screenX,screenY) //距离最近的棋盘落子点
       var mapKeys = this.director.getMapKeys();
-      var map = this.director.getXY()
+      // var map = this.director.getXY()
       for (let i of mapKeys) { // 转化为棋盘坐标
         // console.log(String(map.get(i)), String([screenX,screenY,0]))
-        if (String(map.get(i)[0]).substr(0, 3) == String(screenX).substr(0,3) &&
-          String(map.get(i)[1]).substr(0, 3) == String(screenY).substr(0, 3)) {
-          if (map.get(i)[2]==0) {
+        if (String(this.map.get(i)[0]).substr(0, 3) == String(screenX).substr(0, 3) &&
+          String(this.map.get(i)[1]).substr(0, 3) == String(screenY).substr(0, 3)) {
+          if (this.map.get(i)[2] == 0) {
             this.chessXY = i;
             console.log("chessXY: " + this.chessXY)
-            map.set(i, [screenX, screenY, this.n])
-            console.log(map.get(i))
+            this.map.set(i, [screenX, screenY, this.n])
+            console.log(this.map.get(i))
             this.drawChess()
             break;
-            }
-          else{
+          }
+          else {
             console.log("不能重复下子！")
           }
         }
-        // else if (String(map.get(i)[0]).substr(0, 3) == String(screenX).substr(0, 3) &&
-        //         String(map.get(i)[1]).substr(0, 3) == String(screenY).substr(0, 3) &&
-        //         map.get(i)[2] != 0) {
-        //           console.log("不能重复下子！")
-        //   }
       }
-
-      // this.drawChess()  
+      // console.log(this.map)
     })
-    this.init(); //执行init部分
-  }
 
-  init() {
-    this.datastore
-    .put( //从类属性images获取数据，放进类属性map
-      'chessboard',
-      new BackGround()
-    )
-    .put( //注册头像数据
-      'avatar',
-      new Avatar()
-    )
-    .put(
-      'blackF',
-      new BlackF()
-    );
     this.director.run(); //导演："Action!"
     
   }

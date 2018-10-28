@@ -37,7 +37,9 @@ export class Director{
     this.xyDict = new Map();
     this.mapKeys = [];
     this.mapValues = [];
+    this.n = 0;
     this.datastore = DataStore.getInstance(); //数据仓库单例
+
   }
 
   static getInstance() { //单例
@@ -47,12 +49,28 @@ export class Director{
     return Director.instance;
   }
 
+  
+
+  isGameOver() {
+    if(this.n == 0){
+      this.n++
+      return true
+    }
+    else{
+      return false
+    }
+    
+  }
   run() {
     const backgroundSprite = this.datastore.get('chessboard'); //获取棋盘 BackGround对象
     const avatarSprite = this.datastore.get('avatar');
-    const blackf = this.datastore.get('blackF');
-    // console.log("backgroundSprite: "+backgroundSprite);
+
     backgroundSprite.draw(); //调用精灵基类的draw方法
     avatarSprite.draw();
+    // this.datastore.get('start').draw();
+  }
+  startBefore(){
+    
+    this.datastore.get('start').draw();
   }
 }
