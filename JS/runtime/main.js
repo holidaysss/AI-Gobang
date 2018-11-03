@@ -22,14 +22,24 @@ export class main {
     this.datastore = DataStore.getInstance(); //创建数据仓库单例
     this.datastore.canvas = this.canvas; //储存画布属性
     const loader = ResourceLoader.create();
-    // console.log("xy: "+xy)
-
     this.context.fillStyle = 'white';
     this.context.fillRect(0,0, 10000, 10000);
     var imgB = wx.createImage();
     this.context.fill();
-
     loader.onLoaded(map => this.onResourceFirstLoaded(map)) //资源加载后执行
+  }
+
+  backGroundMusic() { //背景音乐
+    console.log('bmg')
+    const bgm = wx.createInnerAudioContext();
+    
+    bgm.loop=true;
+    bgm.obeyMuteSwitch = false;
+    bgm.src ='music/做什么.mp3';
+    bgm.play();
+    setTimeout(function(){
+      bgm.pause();
+    },200000) //ms后停止
   }
 
   findLatestXY(e) { //找到点击最近的 棋盘点屏幕坐标
@@ -39,7 +49,7 @@ export class main {
       for (var j = 0; j < 15; j++) {
         const mapY = this.director.getXY().get(String(i) + ',' + String(j))[1] //获取棋盘坐标[i,j]的屏幕y坐标
         const perCellSize = this.director.getXY().get("1,0")[0] - this.director.getXY().get("0,0")[0] //获取棋盘每格的宽
-        if (mapY < e.touches[0].clientY && e.touches[0].clientY < mapY + perCellSize / 2) { //四舍五入求最近y坐标
+        if (mapY <= e.touches[0].clientY && e.touches[0].clientY < mapY + perCellSize / 2) { //四舍五入求最近y坐标
           this.screenY = mapY;
           break Loop2;
         }
@@ -53,7 +63,7 @@ export class main {
       }
       const mapX = this.director.getXY().get(String(i) + ',' + String(j))[0] //获取棋盘坐标[i,j]的屏幕x坐标
       const perCellSize = this.director.getXY().get("1,0")[0] - this.director.getXY().get("0,0")[0]
-      if (mapX < e.touches[0].clientX && e.touches[0].clientX < mapX + perCellSize / 2) {
+      if (mapX <= e.touches[0].clientX && e.touches[0].clientX < mapX + perCellSize / 2) {
         this.screenX = mapX;
         break Loop1;
       }
@@ -69,7 +79,7 @@ export class main {
     return [this.screenX, this.screenY]
   }
 
-  drawChess() {
+  drawChess(X,Y) { //参数为落子的屏幕x, y坐标
     if (this.n > 0) { //白先
       this.image.src = 'images/white.png'
     }
@@ -80,12 +90,12 @@ export class main {
     this.context.drawImage( //落子
       this.image, 0, 0,
       this.image.width, this.image.height,
-      this.screenX - this.image.width/2.6, this.screenY - this.image.height/2.6,
+      X - this.image.width/2.6, Y - this.image.height/2.6,
       this.image.width/1.3, this.image.height/1.3)
     
   }
 
-  onResourceFirstLoaded(map) { //资源加载后执行
+  onResourceFirstLoaded(map) { //资源第一次加载后执行
     this.director.formMap();
     this.datastore.context = this.context; //数据仓库单例例增加画布属性
     this.datastore.images = map; //实例增加类属性images 存放图片集合map
@@ -105,45 +115,35 @@ export class main {
     this.director.startBefore() //开始游戏前的画面
     
     this.registerEvent();
-    wx.request({
-      url: 'https://www.leslie2018.com',
-      data: {
-        test: JSON.stringify((1))
-      },
-      method: "POST",
-      header: {
-        'chartset': 'utf-8'
-      }
+    wx.onAudioInterruptionEnd(function () {//中断结束后重开BGM
+      bgm.play()
     })
   }
 
   registerEvent() { //开始游戏，初始化
     this.canvas.addEventListener('touchend', e=> {
-      // e.preventDefault();
       if (this.director.isGameOver()) {
         console.log('游戏开始')
         this.init();
+        this.backGroundMusic(); //播放背景音乐
       }
     })
   }
 
   init() {
+    this.director.run(); //导演："Action!"   
     wx.onTouchStart((e, n = this.n) => { //点击，交替落子
-      // console.log("实际点击坐标： "+e.touches[0].clientX, e.touches[0].clientY) //实际点击屏幕坐标
       var [screenX, screenY] = this.findLatestXY(e) //获取点击的最近棋盘点屏幕坐标  
-      // console.log("最近的棋盘落子点: "+screenX,screenY) //距离最近的棋盘落子点
       var mapKeys = this.director.getMapKeys();
-      // var map = this.director.getXY()
       for (let i of mapKeys) { // 转化为棋盘坐标
-        // console.log(String(map.get(i)), String([screenX,screenY,0]))
         if (String(this.map.get(i)[0]).substr(0, 3) == String(screenX).substr(0, 3) &&
           String(this.map.get(i)[1]).substr(0, 3) == String(screenY).substr(0, 3)) {
-          if (this.map.get(i)[2] == 0) {
+          if (this.map.get(i)[2]==0 && this.n==1) {
             this.chessXY = i;
             console.log("chessXY: " + this.chessXY)
             this.map.set(i, [screenX, screenY, this.n])
             console.log(this.map.get(i))
-            this.drawChess()
+            this.drawChess(screenX,screenY)
             break;
           }
           else {
@@ -151,10 +151,29 @@ export class main {
           }
         }
       }
-      // console.log(this.map)
-    })
-
-    this.director.run(); //导演："Action!"
-    
+      if (this.n == -1) { //玩家执白，AI执黑
+        wx.request({
+          url: 'https://www.leslie2018.com',
+          data: {
+            "token": "users_unique_token",   // 微信用户的token标识 前端提供
+            "apply_game": "0", // 0表示申请开始游戏，1表示不申请  前端提供
+            "location": JSON.stringify(this.chessXY), // 当前用户移动的坐标 
+          },
+          //method: "POST",
+          header: {
+            "Content-Type": "application/json"
+          },
+          success:function(res){
+            console.log('AI落子')
+          },
+          fail: function (res) {
+            console.log('submit fail');
+          },
+          complete: function (res) {
+            console.log('submit complete');
+          } 
+        })
+      }
+    })   
   }
 }
