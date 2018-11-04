@@ -4,5 +4,7 @@ export const Resources = [
   ['black', 'images/black.png'],
   ['white', 'images/white.png'],
   ['avatar', 'images/avatar.jpg'],
-  ['start','images/start.png']
+  ['start','images/start.png'],
+  ['restart','images/restart.png'],
+  ['music','images/music.png']
 ];

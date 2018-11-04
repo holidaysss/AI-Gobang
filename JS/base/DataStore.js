@@ -22,8 +22,11 @@ export class DataStore {
   }
 
   destroy() {
-    for(let value of this.map.values()) {
-      value = null;
+    console.log('销毁')
+    console.log(this.map.values())
+    for(let key of this.map.keys()) {
+      this.map.set(key,null);
     }
+    console.log(this.map.values())
   }
 }

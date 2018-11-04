@@ -39,7 +39,7 @@ export class Director{
     this.mapValues = [];
     this.n = 0;
     this.datastore = DataStore.getInstance(); //数据仓库单例
-
+    
   }
 
   static getInstance() { //单例
@@ -51,7 +51,7 @@ export class Director{
 
   
 
-  isGameOver() {
+  isGameOver() { //this.n=0 即游戏结束
     if(this.n == 0){
       this.n++
       return true
@@ -62,12 +62,24 @@ export class Director{
     
   }
   run() {
+    const image3 = this.datastore.images.get("music");
+    const image2 = this.datastore.images.get("restart"); //重新开始图标
+    console.log(image2)
+    this.datastore.context.drawImage(image3, 0, 0,
+      image3.width, image3.height,
+      this.datastore.canvas.width - image3.width / 5, 0,//棋盘右下方
+      image3.width / 5, image3.height / 5)
+    this.datastore.context.drawImage(image2, 0, 0,
+      image2.width, image2.height,
+      this.datastore.canvas.width-image2.width/5, (this.datastore.canvas.height+this.datastore.canvas.width-20)/2,//棋盘右下方
+      image2.width/5, image2.height/5)
+    this.datastore.get('start').draw();
     const backgroundSprite = this.datastore.get('chessboard'); //获取棋盘 BackGround对象
     const avatarSprite = this.datastore.get('avatar');
-
+    backgroundSprite.drawRestart()
     backgroundSprite.draw(); //调用精灵基类的draw方法
     avatarSprite.draw();
-    // this.datastore.get('start').draw();
+    
   }
   startBefore(){
     
