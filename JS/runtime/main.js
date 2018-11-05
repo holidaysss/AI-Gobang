@@ -93,28 +93,30 @@ export class main {
     return [this.screenX, this.screenY]
   }
 
-  drawChess(X,Y) { //参数为落子的屏幕x, y坐标
-    if (this.n > 0) { //白先
+  drawChess(i) { //参数为落子的棋盘坐标 i: 'x,y' 
+    if (this.n < 0) { //黑先
       this.image.src = 'images/white.png'
     }
     else {
       this.image.src = 'images/black.png'
     }
-    this.n = this.n * -1; //换手
+    var screenX = this.map.get(i)[0] //通过棋盘坐标获取屏幕坐标screenX, screenY
+    var screenY = this.map.get(i)[1]
     this.context.drawImage( //落子
       this.image, 0, 0,
       this.image.width, this.image.height,
-      X - this.image.width/2.6, Y - this.image.height/2.6,
+      screenX - this.image.width/2.6, screenY - this.image.height/2.6,
       this.image.width/1.3, this.image.height/1.3)
-    
+    this.map.set(i, [screenX, screenY, this.n])
+    this.n = this.n * -1; //换手
+    // console.log(screenX,screenY)
+    // console.log(this.map.get(i))
   }
 
   onResourceFirstLoaded(map) { //资源第一次加载后执行
     this.director.formMap();
     this.datastore.context = this.context; //数据仓库单例例增加画布属性
-    this.datastore.images = map; //实例增加类属性images 存放图片集合map
-
-    
+    this.datastore.images = map; //实例增加类属性images 存放图片集合map 
     this.datastore
       .put( //从类属性images获取数据，放进类属性map
         'chessboard',
@@ -156,17 +158,19 @@ export class main {
           if (this.map.get(i)[2]==0 && this.n==1) { //判断位为0且为白子
             this.chessXY = i;
             console.log("chessXY: " + this.chessXY)
-            this.map.set(i, [screenX, screenY, this.n])
-            this.drawChess(screenX,screenY)
+            
+            this.drawChess(i)
             break;
           }
-          else {
+          else { //重复下棋无效
+            this.chessXY=null
+            console.log("chessXY: " + this.chessXY)
             console.log("不能重复下子！")
           }
         }
       }
-      if (true) { //玩家执白，AI执黑
-
+      if (this.n==-1 && this.chessXY != null) { //玩家执白，AI执黑
+        var that=this
         wx.request({
           url: 'https://www.leslie2018.com',
           data: {
@@ -182,15 +186,26 @@ export class main {
             charset: 'UTF-8'
           },
           success: function(res){ //接收
-            console.log('1111111');
+            console.log('success');
             console.log(res.data);
+            if (res.data == '0'){
+              console.log('很遗憾，你输了')
+            }
+            else if (res.data == '1'){
+              console.log('恭喜，你赢了！！！')
+            }
+            else {
+              that.drawChess(res.data)
+              console.log('AI小阿尔法出棋：' + res.data)
+            }
           },
+
           fail: function (res) {
             console.log('submit fail');
           },
-          complete: function (res) {
-            console.log('submit complete');
-          }
+          // complete: function (res) {
+          //   console.log('submit complete');
+          // }
         })
 
       }

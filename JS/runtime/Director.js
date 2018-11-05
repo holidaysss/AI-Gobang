@@ -38,8 +38,7 @@ export class Director{
     this.mapKeys = [];
     this.mapValues = [];
     this.n = 0;
-    this.datastore = DataStore.getInstance(); //数据仓库单例
-    
+    this.datastore = DataStore.getInstance(); //数据仓库单例0  
   }
 
   static getInstance() { //单例
@@ -49,8 +48,6 @@ export class Director{
     return Director.instance;
   }
 
-  
-
   isGameOver() { //this.n=0 即游戏结束
     if(this.n == 0){
       this.n++
@@ -59,12 +56,11 @@ export class Director{
     else{
       return false
     }
-    
   }
+
   run() {
-    const image3 = this.datastore.images.get("music");
+    const image3 = this.datastore.images.get("music"); //音乐图标
     const image2 = this.datastore.images.get("restart"); //重新开始图标
-    console.log(image2)
     this.datastore.context.drawImage(image3, 0, 0,
       image3.width, image3.height,
       this.datastore.canvas.width - image3.width / 5, 0,//棋盘右下方
@@ -78,11 +74,10 @@ export class Director{
     const avatarSprite = this.datastore.get('avatar');
     backgroundSprite.drawRestart()
     backgroundSprite.draw(); //调用精灵基类的draw方法
-    avatarSprite.draw();
-    
+    avatarSprite.draw(); 
   }
-  startBefore(){
-    
+
+  startBefore(){  
     this.datastore.get('start').draw();
   }
 }
