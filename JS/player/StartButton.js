@@ -4,7 +4,7 @@ import { DataStore } from "../base/DataStore.js"
 export class StartButton extends Sprite {
   constructor() {
     const image = Sprite.getImage('start')
-    console.log(image)
+
     super(
       image,
       0,0,

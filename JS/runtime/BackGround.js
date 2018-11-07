@@ -12,11 +12,11 @@ export class BackGround extends Sprite { //背景类 继承精灵基类
         DataStore.getInstance().canvas.width-20, DataStore.getInstance().canvas.width-20
       ); // 屏幕上棋盘的长宽(正方形)
   }
-  drawRestart() {
-    const image2 = Sprite.getImage("restart");
+  // drawRestart() {
+  //   const image2 = Sprite.getImage("restart");
 
-    console.log(image2)
-  }
+  //   console.log(image2)
+  // }
 }
 
 
