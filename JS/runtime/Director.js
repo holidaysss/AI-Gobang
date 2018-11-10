@@ -15,8 +15,9 @@ export class Director{
     this.image = wx.createImage();
     this.n = 1;
     this.chessXY = null;
-    this.n=1;
     this.datastore = DataStore.getInstance(); //数据仓库单例0  
+    // this.datastore.canvas.width = this.datastore.canvas.width * 2;
+    // this.datastore.canvas.height = this.datastore.canvas.height * 2;
   }
 
   formMap() { //创建存储棋盘坐标，屏幕坐标的Map对象
@@ -91,17 +92,17 @@ export class Director{
     else {
       this.image.src = 'images/black.png'
     }
+    console.log(this.image)
     var screenX = this.xyDict.get(i)[0] //通过棋盘坐标获取屏幕坐标screenX, screenY
     var screenY = this.xyDict.get(i)[1]
     this.datastore.context.drawImage( //落子
       this.image, 0, 0,
       this.image.width, this.image.height,
-      screenX - this.image.width / 3.8, screenY - this.image.height / 3.8,
-      this.image.width / 1.9, this.image.height / 1.9)
+      screenX - this.image.width / 4, screenY - this.image.height /4,
+      this.image.width / 2, this.image.height / 2)
     this.xyDict.set(i, [screenX, screenY, this.n])
     this.n = this.n * -1; //换手
-    // console.log(screenX,screenY)
-    // console.log(this.map.get(i))
+    console.log('draw')
   }
 
   xyDictInit() { //map重置
@@ -124,7 +125,7 @@ export class Director{
     return Director.instance;
   }
 
-  isYourTurn() {
+  isYourTurn() { //判断是否轮到玩家下子
     if (this.n == 1) {
       return true
     }
@@ -143,12 +144,36 @@ export class Director{
     }
   }
 
-  startBefore() {
+  startBefore() { //开始前的界面
+    this.datastore.context.font = 'bold 35px Arial';
+    this.datastore.context.textAlign = 'center';
+    this.datastore.context.textBaseline = 'bottom';
+    this.datastore.context.fillStyle = '#FF00FF';
+    this.datastore.context.fillText("盲人五子棋",     this.datastore.canvas.width/2, 120);
     this.datastore.get('start').draw(); //绘制开始图标 
+    wx.request({ //先清空后台的棋盘
+      url: 'https://www.leslie2018.com',
+      data: {
+        token: 0,   // 微信用户的token标识 前端提供
+        apply_game: "0", // 0表示申请开始游戏，1表示不申请  前端提供 
+        location: JSON.stringify(0, 0), // 当前用户移动的坐标 
+        restart: 1
+        //restart: this.restart
+      },
+      method: "POST",
+      dataType: 'json',
+      header: {
+        "content-type": "application/x-www-form-urlencoded",
+        charset: 'UTF-8'
+      },
+      success: function (res) {
+      }
+    })
   }
 
   turnToChessXY(screenX, screenY) { //屏幕坐标转成棋盘坐标
     var mapKeys = this.getMapKeys();
+    // console.log(screenX, screenY)
     for (let i of mapKeys) { // 转化为棋盘坐标
       if (String(this.xyDict.get(i)[0]).substr(0, 3) == String(screenX).substr(0, 3) &&
         String(this.xyDict.get(i)[1]).substr(0, 3) == String(screenY).substr(0, 3)) {
@@ -164,6 +189,10 @@ export class Director{
           console.log("不能重复下子！")
         }
       }
+      else if (i == "14,14"){ //偶尔会识别不了个别屏幕坐标，需要重新点击
+        this.chessXY = null
+        console.log('here')
+      }
     }
   }
 
@@ -172,7 +201,18 @@ export class Director{
     backgroundSprite.draw(); //绘制棋盘
   }
 
-  run() {
+  sleep(n) {
+    var start = new Date().getTime();
+    console.log('休眠');
+    while (true) {
+      if (new Date().getTime() - start > n) {
+        break;
+      }
+    }
+  }
+
+  run(code, avatarUrl) {
+    this.code = code
     const image3 = this.datastore.images.get("music"); //音乐图标
     const image2 = this.datastore.images.get("restart"); //重新开始图标
      //获取棋盘 BackGround对象
@@ -186,8 +226,26 @@ export class Director{
       this.datastore.canvas.width-image2.width/5, (this.datastore.canvas.height+this.datastore.canvas.width-20)/2,//棋盘右下方
       image2.width/5, image2.height/5)
 
-    this.chessBoardInit()
-    var image = this.datastore.images.get("avatar")
+    this.chessBoardInit() //初始化棋盘
+    var image = null
+    if (!avatarUrl) {
+      image = this.datastore.images.get("avatar") //圆形头像
+      console.log(image)
+    } 
+    else {
+      image = wx.createImage()
+      console.log(typeof(image))
+      image.src = avatarUrl + "?aaa=aa.jpg"
+      // wx.setStorage({
+      //   key: "image",
+      //   data: image
+      // })
+      // image = wx.getStorage('image')
+      
+      // var image = avatarUrl + "?aaa=aa.jpg"
+      console.log(image)
+
+    }
     this.datastore.context.save();
     this.datastore.context.beginPath();
     this.datastore.context.arc(
@@ -203,41 +261,49 @@ export class Director{
       84,84);
     this.datastore.context.restore();
 
-    wx.onTouchStart((e, n = this.n) => { //点击，交替落子
+    wx.onTouchStart((e, n = this.n, code=this.code) => { //点击，交替落子
+      console.log(this.code)
       var [screenX, screenY] = this.findLatestXY(e) //获取点击的最近棋盘点屏幕坐标 
       this.turnToChessXY(screenX, screenY)      
       if (this.x && this.chessXY != null) { //玩家执黑，AI执白
         this.drawChess(this.chessXY)
+        
         console.log("chessXY: " + this.chessXY)
+        // this.sleep(100) //休眠1秒
         var that = this
-        wx.request({
+        wx.request({ //把坐标传给后台
           url: 'https://www.leslie2018.com',
           data: {
-            token: 0,   // 微信用户的token标识 前端提供
+            token: JSON.stringify(this.code),   // 微信用户的token标识 前端提供
             apply_game: "0", // 0表示申请开始游戏，1表示不申请  前端提供        
             location: JSON.stringify(this.chessXY), // 当前用户移动的坐标 
-            //restart: this.restart
           },
           method: "POST",
           dataType: 'json',
-
           header: {
             "content-type": "application/x-www-form-urlencoded",
             charset: 'UTF-8'
           },
           success: function (res) { //接收
-            // console.log('success');
-            // console.log(res.data);
             if (res.data == '0') {              
               console.log('很遗憾，你输了')
+              that.datastore.context.font = 'bold 35px Arial';
+              that.datastore.context.textAlign = 'center';
+              that.datastore.context.textBaseline = 'bottom';
+              that.datastore.context.fillStyle = '#FF00FF';
+              that.datastore.context.fillText("哎呀，你输了", that.datastore.canvas.width/2, that.datastore.canvas.height/2);
             }
             else if (res.data == '1') {
-              console.log('恭喜，你赢了！！！')
+              console.log('哟 不错哦！你赢了')
+              that.datastore.context.font = 'bold 35px Arial';
+              that.datastore.context.textAlign = 'center';
+              that.datastore.context.textBaseline = 'bottom';
+              that.datastore.context.fillStyle = '#FF00FF';
+              that.datastore.context.fillText("哟 不错哦！你赢了", that.datastore.canvas.width / 2, that.datastore.canvas.height / 2);
             }
-            else {
-            
+            else if (res.data == '-1'){}
+            else {           
               that.drawChess(res.data)
-
               console.log('小阿尔法出棋：' + res.data)
             }
           },

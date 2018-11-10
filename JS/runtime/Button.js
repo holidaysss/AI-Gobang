@@ -7,6 +7,7 @@ export class Button {
     this.datastore = DataStore.getInstance();
     this.musicOff = false;
     this.director = Director.getInstance()
+    
     // this.main = new main();
   }
   playMusic() { //背景音乐
@@ -17,12 +18,10 @@ export class Button {
     bgm.obeyMuteSwitch = false;
     bgm.src = 'music/Flamingo.mp3';
     bgm.play();
-    // wx.onAudioInterruptionEnd(function () {//中断结束后重开BGM
-    //   bgm.play();
-    // })
-    // setTimeout(function(){
-    //   bgm.pause();
-    // },200000) //ms后停止
+    wx.onAudioInterruptionEnd(function () {//中断结束后重开BGM
+      bgm.play();
+    })
+
   }
   musicButton() { //音乐开关
     let Button = wx.createUserInfoButton({
@@ -65,7 +64,9 @@ export class Button {
     Button.onTap((res) => {     
       console.log('重开')
       this.director.xyDictInit() //map重置
-
+      this.datastore.context.clearRect(11.5, (this.datastore.canvas.height - this.datastore.canvas.width+20)/2,
+      this.datastore.canvas.width-20,
+      this.datastore.canvas.width-20)
       this.director.chessBoardInit() //棋盘重置
       wx.request({
         url: 'https://www.leslie2018.com',
@@ -85,9 +86,6 @@ export class Button {
         },
         success: function (res) { //接收
           // console.log(res)
-        },
-        fail: function (res) {
-          console.log('submit fail');
         }
       })
     })
