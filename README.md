@@ -1,9 +1,9 @@
 # AI-Gobang
 AI五子棋小程序
 ## 程序简介
-AlphaGo Zero在世界舞台上取得的巨大成功体现了人工智能算法的快速发展和其蕴含着的应用价值，本团队借鉴AlphaGo Zero算法思想和架构，简单实现五子棋的人工智能棋手，通过人工智能自我的不断下棋，不断训练，并且不断迭代更新自身-自训练模式，从而训练一个水平极高的人工智能棋手，让广大玩家体验一把与“AlphaGo Zero”的感觉。本团队提出的程序-AI五子棋不仅加入人工智能元素，并且以微信小程序的方式部署，为所有微信用户提供简洁方便的模式风格轻松进行五子棋游戏。
+AlphaGo Zero在世界舞台上取得的巨大成功体现了人工智能算法的快速发展和其蕴含着的应用价值，本团队借鉴AlphaGo Zero算法思想和架构，简单实现五子棋的人工智能棋手，通过人工智能自我的不断下棋，不断训练，并且不断迭代更新自身-自训练模式，从而训练一个水平极高的人工智能棋手，让广大玩家体验一把与“AlphaGo Zero”的感觉。本团队提出的程序-AI五子棋不仅没加入人工智能元素，并且以微信小程序的方式部署，为所有微信用户提供简洁方便的模式风格轻松进行五子棋游戏。
 ## 参考资料
-AlphaGo Zero的主要论文文献，互联网上的AlphaGo Zero算法研究文章，AlphaGo Zero 相关的知识文章，微信小程序游戏类型开发知识文章，python后端开发知识文章，服务器搭建配置知识文章，python必要运行环境搭建配置知识文章。
+AlphaGo Zero的主要论文文献，互联网上的AlphaGo Zero算法研究文章，AlphaGo Zero 相关的知识文章都是看看就可以，微信小程序游戏类型开发知识文章，python后端开发知识文章，服务器搭建配置知识文章，python必要运行环境搭建配置知识文章。
 AlphaZero: Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm
 AlphaGo Zero: Mastering the game of Go without human knowledge
 ## 程序架构
